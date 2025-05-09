@@ -1,0 +1,51 @@
+absraction-
+complex ideas to simple ones
+individual data objects
+variable-noun{name,age,number}
+function- verbs{print,etc} methods
+Object-(data object)- combinds variables and functions together
+ex:cake and recipe
+
+crosby.IntroduceThyself()
+
+1. Decide name
+2. Decide Method
+3. Decide Attributed
+ex: car
+Name:String
+MAke:String
+Tires:Tire
+ex:Tire
+airpressure:Int
+radius:double
+width:double
+aspectratio: double
+
+Recipe book:
+ingredients:
+    cake: flour sugar eggs
+    frosting: sugar buttar
+Instructions: 
+
+
+
+we bring them all together
+
+message with assci art border
+
+3 sections to a class diagram
+
+
+_border : char ex:'#'
+
+_message:string
+Display():void
+GetHorizontalBorder:String
+GetMessageLine:String
+
+<!-- PrintTopBorder:void
+PrintMessage:void
+PrintBottomBorder:void -->
+
+
+Journal:
