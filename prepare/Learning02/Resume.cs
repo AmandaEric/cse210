@@ -1,20 +1,20 @@
 using System;
 
 
-class Resume
-{
-     string _name;
+// class Resume
+// {
+//      string _name;
 
-     List<Job> _jobs = new List<Job>();
+//      List<Job> _jobs = new List<Job>();
 
-     void Display()
-    {
-        Console.WriteLine($"Name: {_name}");
-        Console.WriteLine("Jobs:");
+//      void Display()
+//     {
+//         Console.WriteLine($"Name: {_name}");
+//         Console.WriteLine("Jobs:");
 
-        foreach (Job job in _jobs)
-        {
-            job.Display();
-        }
-    }
-}
+//         foreach (Job job in _jobs)
+//         {
+//             job.Display();
+//         }
+//     }
+// }
