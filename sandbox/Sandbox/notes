@@ -49,3 +49,25 @@ PrintBottomBorder:void -->
 
 
 Journal:
+Interfaces: When there is a comon function but no relating parent class.
+-class without guts
+example: A outlet has a look that allows things to plug into it
+-should always have an "I" in front of the title 
+interface:
+public interface IPhoneNumber
+{
+    string GetPhoneNumber();
+}
+name file the same as the class or interface
+-does not inherit
+
+public class Phone : IPhoneNumber
+{
+    private string _type;
+    private string _phoneNumber
+    public Phone(string type, string owner, string phoneNumber)
+
+    public string GetPhoneNumber()
+    return
+}
+abstracts can have variables and interfaces cannot
