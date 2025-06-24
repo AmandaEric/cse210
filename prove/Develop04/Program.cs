@@ -1,9 +1,23 @@
 using System;
-
-class Program
+abstract class Activity
 {
-    static void Main(string[] args)
+    private string _name;
+
+    private string _description;
+    private int _duration;
+
+    public Activity(string name, string description)
     {
-        Console.WriteLine("Hello Develop04 World!");
+        _name = name;
+        _description = description;
     }
+    public void Start()
+    {
+        Console.Clear();
+        Console.WriteLine($"--{_name}---\n");
+        Console.WriteLine(_description);
+        Console.Write("\nEnter duration in seconds: ");
+        _duration = int.Parse(Console.ReadLine());
+
+            }
 }
