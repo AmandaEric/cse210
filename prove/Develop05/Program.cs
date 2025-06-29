@@ -1,106 +1,82 @@
 using System;
 using System.Collections.Generic;
-using System.IO; // Added for File operations
+using System.IO;
 
 class Program
 {
     static List<Goal> goals = new List<Goal>();
-    static int totalScore = 0; // Added total score
+    static int totalScore = 0;
 
-    static void Main(string[] args)
+    static void Main()
     {
-        bool running = true;
-        while (running)
+        string choice = "";
+        while (choice != "6")
         {
-            Console.WriteLine($"\nYour Current Score: {totalScore} points"); // Display total score
-            Console.WriteLine("\nMenu Options:");
+            Console.WriteLine($"\nScore: {totalScore}");
             Console.WriteLine("1. Create New Goal");
             Console.WriteLine("2. List Goals");
             Console.WriteLine("3. Save Goals");
             Console.WriteLine("4. Load Goals");
             Console.WriteLine("5. Record Event");
             Console.WriteLine("6. Quit");
-            Console.Write("Choose a menu number: ");
-            string input = Console.ReadLine();
+            Console.Write("Choose an option: ");
+            choice = Console.ReadLine();
 
-            switch (input)
+            switch (choice)
             {
                 case "1": CreateGoal(); break;
                 case "2": ListGoals(); break;
                 case "3": SaveGoals(); break;
                 case "4": LoadGoals(); break;
-                case "5": RecordGoalEvent(); break;
-                case "6": running = false; Console.WriteLine("Goodbye!"); break;
-                default: Console.WriteLine("Invalid option. Try again."); break;
+                case "5": RecordEvent(); break;
+                case "6": Console.WriteLine("Goodbye!"); break;
+                default: Console.WriteLine("Invalid option."); break;
             }
         }
     }
 
     static void CreateGoal()
     {
-        Console.WriteLine("Select goal type:");
-        Console.WriteLine("1. Simple Goal");
-        Console.WriteLine("2. Eternal Goal");
-        Console.WriteLine("3. Checklist Goal");
-        string choice = Console.ReadLine();
+        Console.WriteLine("Choose goal type:");
+        Console.WriteLine("1. Simple");
+        Console.WriteLine("2. Eternal");
+        Console.WriteLine("3. Checklist");
+        string type = Console.ReadLine();
 
-        Console.Write("Enter goal name: ");
+        Console.Write("Goal name: ");
         string name = Console.ReadLine();
-        Console.Write("Enter description: ");
+        Console.Write("Description: ");
         string desc = Console.ReadLine();
+        Console.Write("Point value: ");
+        int points = int.Parse(Console.ReadLine());
 
-        int points;
-        Console.Write("Enter point value: ");
-        while (!int.TryParse(Console.ReadLine(), out points) || points < 0)
+        if (type == "1")
         {
-            Console.Write("Invalid input. Please enter a non-negative number for points: ");
+            goals.Add(new SimpleGoal(name, desc, points));
         }
-
-        switch (choice)
+        else if (type == "2")
         {
-            case "1":
-                goals.Add(new SimpleGoal(name, desc, points));
-                break;
-            case "2":
-                goals.Add(new EternalGoal(name, desc, points));
-                break;
-            case "3":
-                int targetCount;
-                Console.Write("Enter number of times to complete: ");
-                while (!int.TryParse(Console.ReadLine(), out targetCount) || targetCount <= 0)
-                {
-                    Console.Write("Invalid input. Please enter a positive number for times to complete: ");
-                }
-
-                int bonus;
-                Console.Write("Enter bonus points: ");
-                while (!int.TryParse(Console.ReadLine(), out bonus) || bonus < 0)
-                {
-                    Console.Write("Invalid input. Please enter a non-negative number for bonus points: ");
-                }
-                goals.Add(new ChecklistGoal(name, desc, points, targetCount, bonus));
-                break;
-            default:
-                Console.WriteLine("Invalid goal type. Goal not created.");
-                return;
+            goals.Add(new EternalGoal(name, desc, points));
         }
-
-        Console.WriteLine("Goal created!");
+        else if (type == "3")
+        {
+            Console.Write("How many times to complete: ");
+            int target = int.Parse(Console.ReadLine());
+            Console.Write("Bonus points: ");
+            int bonus = int.Parse(Console.ReadLine());
+            goals.Add(new ChecklistGoal(name, desc, points, target, bonus));
+        }
+        else
+        {
+            Console.WriteLine("Invalid goal type.");
+        }
     }
 
     static void ListGoals()
     {
-        if (goals.Count == 0)
+        for (int i = 0; i < goals.Count; i++)
         {
-            Console.WriteLine("No goals to display.");
-            return;
-        }
-
-        Console.WriteLine("\nYour Goals:");
-        int i = 1;
-        foreach (Goal goal in goals)
-        {
-            Console.WriteLine($"{i++}. {goal.GetDetails()}");
+            Console.WriteLine($"{i + 1}. {goals[i].GetDetails()}");
         }
     }
 
@@ -108,51 +84,49 @@ class Program
     {
         using (StreamWriter writer = new StreamWriter("goals.txt"))
         {
-            foreach (Goal goal in goals)
+            foreach (Goal g in goals)
             {
-                writer.WriteLine(goal.GetStringRepresentation());
+                writer.WriteLine(g.SaveString());
             }
-            writer.WriteLine($"TotalScore:{totalScore}"); // Save total score
+            writer.WriteLine($"SCORE:{totalScore}");
         }
         Console.WriteLine("Goals saved.");
     }
 
     static void LoadGoals()
     {
-        goals.Clear();
-        totalScore = 0; // Reset total score before loading
         if (File.Exists("goals.txt"))
         {
+            goals.Clear();
             string[] lines = File.ReadAllLines("goals.txt");
             foreach (string line in lines)
             {
-                if (line.StartsWith("TotalScore:"))
+                if (line.StartsWith("SCORE:"))
                 {
                     totalScore = int.Parse(line.Split(':')[1]);
-                    continue;
                 }
-
-                string[] parts = line.Split('|');
-                switch (parts[0])
+                else
                 {
-                    case "SimpleGoal":
-                        var simple = new SimpleGoal(parts[1], parts[2], int.Parse(parts[3]));
-                        
-                        if (bool.Parse(parts[4]))
-                        {
-                            simple.MarkComplete(); 
-                        }
-                        goals.Add(simple);
-                        break;
-                    case "EternalGoal":
+                    string[] parts = line.Split('|');
+                    string type = parts[0];
+                    if (type == "Simple")
+                    {
+                        bool done = bool.Parse(parts[4]);
+                        var g = new SimpleGoal(parts[1], parts[2], int.Parse(parts[3]));
+                        if (done) g.MarkDone();
+                        goals.Add(g);
+                    }
+                    else if (type == "Eternal")
+                    {
                         goals.Add(new EternalGoal(parts[1], parts[2], int.Parse(parts[3])));
-                        break;
-                    case "ChecklistGoal":
-
-                        var checklist = new ChecklistGoal(parts[1], parts[2], int.Parse(parts[3]), int.Parse(parts[5]), int.Parse(parts[4]));
-                        checklist.SetCompletedCount(int.Parse(parts[6])); 
-                        goals.Add(checklist);
-                        break;
+                    }
+                    else if (type == "Checklist")
+                    {
+                        var g = new ChecklistGoal(parts[1], parts[2], int.Parse(parts[3]),
+                                                  int.Parse(parts[4]), int.Parse(parts[5]));
+                        g.SetCount(int.Parse(parts[6]));
+                        goals.Add(g);
+                    }
                 }
             }
             Console.WriteLine("Goals loaded.");
@@ -163,159 +137,123 @@ class Program
         }
     }
 
-    static void RecordGoalEvent()
+    static void RecordEvent()
     {
-        if (goals.Count == 0)
-        {
-            Console.WriteLine("No goals to record events for. Create some goals first.");
-            return;
-        }
-
         ListGoals();
-        Console.Write("Select goal number to record event: ");
-        int index;
-        while (!int.TryParse(Console.ReadLine(), out index) || index <= 0 || index > goals.Count)
+        Console.Write("Enter goal number to record: ");
+        int index = int.Parse(Console.ReadLine()) - 1;
+        if (index >= 0 && index < goals.Count)
         {
-            Console.Write("Invalid input. Please enter a valid goal number: ");
+            int earned = goals[index].RecordEvent();
+            totalScore += earned;
+            Console.WriteLine($"Points earned: {earned}");
         }
-
-        Goal selectedGoal = goals[index - 1];
-        int pointsEarned = selectedGoal.RecordEventAndGetPoints(); 
-        totalScore += pointsEarned;
-        Console.WriteLine($"You have accumulated {totalScore} points.");
-    }
-
-    public abstract class Goal
-    {
-        public string GoalName { get; protected set; }
-        public string Description { get; protected set; }
-        public int Points { get; protected set; }
-
-        public Goal(string name, string description, int points)
+        else
         {
-            GoalName = name;
-            Description = description;
-            Points = points;
+            Console.WriteLine("Invalid goal number.");
         }
-
-        public abstract int RecordEventAndGetPoints(); 
-        public abstract bool IsComplete();
-        public abstract string GetDetails();
-        public abstract string GetStringRepresentation();
-    }
-
-
-
-    class SimpleGoal : Goal
-    {
-        private bool _completed;
-
-        public SimpleGoal(string name, string description, int points) : base(name, description, points)
-        {
-            _completed = false;
-        }
-
-        // Added for loading to set completion without awarding points again
-        public void MarkComplete()
-        {
-            _completed = true;
-        }
-
-        public override int RecordEventAndGetPoints()
-        {
-            if (!_completed)
-            {
-                _completed = true;
-                Console.WriteLine($"Congratulations! You completed '{GoalName}' and earned {Points} points!");
-                return Points;
-            }
-            else
-            {
-                Console.WriteLine($"The goal '{GoalName}' is already completed.");
-                return 0;
-            }
-        }
-
-        public override bool IsComplete() => _completed;
-
-        public override string GetDetails() => $"[{(_completed ? "X" : " ")}] {GoalName} ({Description})";
-
-        public override string GetStringRepresentation() => $"SimpleGoal|{GoalName}|{Description}|{Points}|{_completed}";
-    }
-
-    class EternalGoal : Goal
-    {
-        public EternalGoal(string name, string description, int points) : base(name, description, points) { }
-
-        public override int RecordEventAndGetPoints()
-        {
-            Console.WriteLine($"You recorded an event for '{GoalName}' and earned {Points} points!");
-            return Points;
-        }
-
-        public override bool IsComplete() => false;
-
-        public override string GetDetails() => $"[∞] {GoalName} ({Description})";
-
-        public override string GetStringRepresentation() => $"EternalGoal|{GoalName}|{Description}|{Points}";
-    }
-
-    class ChecklistGoal : Goal
-    {
-        private int _targetCount;
-        private int _completedCount;
-        private int _bonus;
-
-        public ChecklistGoal(string name, string description, int points, int targetCount, int bonus) : base(name, description, points)
-        {
-            _targetCount = targetCount;
-            _completedCount = 0;
-            _bonus = bonus;
-        }
-
-        // Added for loading to set completed count directly
-        public void SetCompletedCount(int count)
-        {
-            _completedCount = count;
-        }
-
-        public override int RecordEventAndGetPoints()
-        {
-            if (_completedCount < _targetCount)
-            {
-                _completedCount++;
-                if (_completedCount == _targetCount)
-                {
-                    Console.WriteLine($"Congratulations! You completed '{GoalName}' and earned {Points + _bonus} points!");
-                    return Points + _bonus;
-                }
-                else
-                {
-                    Console.WriteLine($"You recorded an event for '{GoalName}' and earned {Points} points. You are {_completedCount}/{_targetCount} times complete.");
-                    return Points;
-                }
-            }
-            else
-            {
-                Console.WriteLine($"The checklist goal '{GoalName}' is already completed.");
-                return 0;
-            }
-        }
-
-        public override bool IsComplete() => _completedCount >= _targetCount;
-
-        public override string GetDetails() => $"[{_completedCount}/{_targetCount}] {GoalName} ({Description}) {(IsComplete() ? "(Completed)" : "")}";
-
-        public override string GetStringRepresentation() =>
-            $"ChecklistGoal|{GoalName}|{Description}|{Points}|{_bonus}|{_targetCount}|{_completedCount}";
     }
 }
 
-// eternal goal is never completed but will still give points
-// abstract Goal will
-// name:
-// Description:
-// Points
-// simple goal
-// menu shows: 1.create new goal 2. list goals 3. save goals 4. load goal 5. record event 6. quit
-// abstract class Goal
+// ==========================
+//        Goal Classes
+// ==========================
+
+abstract class Goal
+{
+    public string Name;
+    public string Description;
+    public int Points;
+
+    public Goal(string name, string description, int points)
+    {
+        Name = name;
+        Description = description;
+        Points = points;
+    }
+
+    public abstract int RecordEvent();
+    public abstract string GetDetails();
+    public abstract string SaveString();
+}
+
+class SimpleGoal : Goal
+{
+    private bool done = false;
+
+    public SimpleGoal(string name, string description, int points) : base(name, description, points) { }
+
+    public void MarkDone() => done = true;
+
+    public override int RecordEvent()
+    {
+        if (!done)
+        {
+            done = true;
+            return Points;
+        }
+        return 0;
+    }
+
+    public override string GetDetails()
+    {
+        return $"[{(done ? "X" : " ")}] {Name} - {Description}";
+    }
+
+    public override string SaveString()
+    {
+        return $"Simple|{Name}|{Description}|{Points}|{done}";
+    }
+}
+
+class EternalGoal : Goal
+{
+    public EternalGoal(string name, string description, int points) : base(name, description, points) { }
+
+    public override int RecordEvent() => Points;
+
+    public override string GetDetails() => $"[∞] {Name} - {Description}";
+
+    public override string SaveString()
+    {
+        return $"Eternal|{Name}|{Description}|{Points}";
+    }
+}
+
+class ChecklistGoal : Goal
+{
+    private int count = 0;
+    private int target;
+    private int bonus;
+
+    public ChecklistGoal(string name, string description, int points, int target, int bonus)
+        : base(name, description, points)
+    {
+        this.target = target;
+        this.bonus = bonus;
+    }
+
+    public void SetCount(int c) => count = c;
+
+    public override int RecordEvent()
+    {
+        if (count < target)
+        {
+            count++;
+            if (count == target)
+                return Points + bonus;
+            return Points;
+        }
+        return 0;
+    }
+
+    public override string GetDetails()
+    {
+        return $"[{count}/{target}] {Name} - {Description}";
+    }
+
+    public override string SaveString()
+    {
+        return $"Checklist|{Name}|{Description}|{Points}|{target}|{bonus}|{count}";
+    }
+}
