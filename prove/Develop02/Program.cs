@@ -1,10 +1,11 @@
 using System;
+using System.Runtime.CompilerServices;
 
 class Program
 {
     static void Main(string[] args)
     {
-         Journal journal = new Journal();
+        Journal journal = new Journal();
         PromptGenerator generator = new PromptGenerator();
         bool running = true;
 
@@ -19,6 +20,7 @@ class Program
             Console.Write("Choose a menu number: ");
             string input = Console.ReadLine();
             Console.WriteLine();
+
 
             switch (input)
             {
@@ -60,8 +62,14 @@ class Program
                     break;
             }
         }
+        Entry e = new Entry("", "", "");
+        Console.WriteLine(e.ToString());
+        public override string ToString()
+    {
+        return "";
+
     }
-    }
+}
 
 public class Entry
 {
